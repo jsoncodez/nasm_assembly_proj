@@ -1,0 +1,180 @@
+     1                                  	extern	printf
+     2                                         	section .data
+     3 00000000 456E74657220612073-     string_req:     db      "Enter a string: ", 10
+     3 00000009 7472696E673A200A   
+     4                                  len_s:          equ     $-string_req
+     5                                  
+     6                                  
+     7 00000011 456E7465722061206E-     num_req:        db      "Enter a number (1-99): ", 10
+     7 0000001A 756D6265722028312D-
+     7 00000023 3939293A200A       
+     8                                  len_n:          equ     $-num_req
+     9                                  
+    10 00000029 0A                      new_line:       db      10
+    11 0000002A 00                      single_num:     db      0
+    12 0000002B 0A                      b_ten:          db      10
+    13 0000002C 00                      rand_seed:	db	0
+    14 0000002D 0000000000000000        randnum: 	dq	0
+    15                                  
+    16 00000035 256C64203D206D6178-     fmt:		db	"%ld = maxrand(%ld,%ld)",10,0
+    16 0000003E 72616E6428256C642C-
+    16 00000047 256C64290A00       
+    17                                  
+    18                                  
+    19                                   
+    20                                  
+    21                                         section .bss
+    22 00000000 <res FFh>               string_buff:    resb    255 ;stores input string_req from user
+    23 000000FF ??????                  num_buff:       resb    3 ;stores input num_req from user
+    24 00000102 ??                      char_buff:      resb    1
+    25 00000103 ??                      decimal_buff:   resb    1
+    26 00000104 <res FFh>               result:		resb	255
+    27                                  
+    28                                  
+    29                                  
+    30                                          section .text
+    31                                          global main
+    32                                  
+    33                                  print:
+    34 00000000 B801000000                      mov rax, 1
+    35 00000005 BF01000000                      mov rdi, 1
+    36 0000000A 0F05                            syscall
+    37 0000000C C3                              ret
+    38                                  
+    39                                  
+    40                                  main:
+    41                                          ;prints out enter a number prompt
+    42                                          ;mov rax, 1 ;put 1 in rax to write
+    43                                          ;mov rdi, 1 ;put 1 for rdi to write to standard out stdout
+    44                                          ;mov rsi, num_req ;rsi is a pointer to the buffer we are reading from
+    45                                          ;mov rdx, len_n ;prints out how many characters are in len_n
+    46                                          ;syscall
+    47 0000000D 4831C0                          xor rax, rax
+    48 00000010 4D31C9                          xor r9, r9
+    49 00000013 4831F6                          xor rsi, rsi
+    50                                  
+    51                                  user_num:
+    52 00000016 B801000000                      mov rax, 1 ;put 1 in rax to write
+    53 0000001B BF01000000                      mov rdi, 1 ;put 1 for rdi to write to standard out stdout
+    54 00000020 48BE-                           mov rsi, num_req ;rsi is a pointer to the buffer we are reading from
+    54 00000022 [1100000000000000] 
+    55 0000002A BA18000000                      mov rdx, len_n ;prints out how many characters are in len_n
+    56 0000002F 0F05                            syscall
+    57                                  
+    58 00000031 B800000000                      mov     rax, 0
+    59 00000036 BF00000000                      mov     rdi, 0
+    60 0000003B 48BE-                           mov     rsi, num_buff
+    60 0000003D [FF00000000000000] 
+    61                                          ;mov    rdx, 3
+    62 00000045 0F05                            syscall
+    63                                  	;include loop jcc for #'s outside of 1-99 - probably do a call to convert #'s
+    64                                  	;mov	rdi, rax	; probably use for indexing for loop for integer conversion
+    65                                  
+    66                                  num_convert:
+    67                                  	;can remove r8 most likely already stored in rsi
+    68                                  
+    69 00000047 49B8-                           mov     r8, num_buff
+    69 00000049 [FF00000000000000] 
+    70 00000051 4983C000                        add     r8, 0
+    71 00000055 418A00                          mov     al, [r8]
+    72 00000058 880425[03010000]                mov     [decimal_buff], al
+    73 0000005F 4D31C9                          xor     r9, r9
+    74 00000062 448A0C25[03010000]              mov     r9b, [decimal_buff]
+    75 0000006A 4180E930                        sub     r9b, 48
+    76 0000006E 4C0FAF0C25-                     imul    r9, [b_ten]
+    76 00000073 [2B000000]         
+    77                                  
+    78                                          ;mov    rax, 1
+    79                                          ;mov    rdi, 1
+    80                                          ;mov    rsi, decimal_buff
+    81                                          ;mov    rdx, 1
+    82                                          ;syscall
+    83                                  
+    84 00000077 49B8-                           mov     r8, num_buff
+    84 00000079 [FF00000000000000] 
+    85 00000081 4983C001                        add     r8, 1
+    86 00000085 418A00                          mov     al, [r8]
+    87 00000088 880425[03010000]                mov     [decimal_buff], al
+    88 0000008F 4D31D2                          xor     r10, r10
+    89 00000092 448A1425[03010000]              mov     r10b, [decimal_buff]
+    90 0000009A 4180EA30                        sub     r10b, 48
+    91 0000009E 4D01D1                          add     r9, r10
+    92                                  	
+    93                                  	
+    94                                  	 
+    95                                  	;starting maxrand gen rng
+    96 000000A1 4831F6                  	xor	rsi, rsi
+    97 000000A4 4831FF                  	xor	rdi, rdi
+    98 000000A7 4C89CF                  	mov	rdi, r9
+    99                                  	;mov	rsi, [max_num] ;rsi stores address probably?
+   100                                  
+   101 000000AA BE63000000              	mov	rsi, 99 ;rsi stores address probably?
+   102                                  
+   103 000000AF E82E000000              	call	maxrand
+   104                                  	
+   105 000000B4 48890425[2D000000]      	mov	[randnum], rax	
+   106                                  	
+   107 000000BC 48BF-                   	mov	rdi, fmt
+   107 000000BE [3500000000000000] 
+   108 000000C6 488B3425[2D000000]      	mov	rsi, [randnum]
+   109 000000CE 4C89CA                  	mov	rdx, r9
+   110 000000D1 B963000000              	mov	rcx, 99 
+   111 000000D6 B800000000              	mov	rax, 0
+   112 000000DB E8(00000000)            	call	printf
+   113                                  		
+   114 000000E0 EB3A                    	jmp exit
+   115                                          ;mov     rax, 1
+   116                                          ;mov     rdi, 1
+   117                                          ;syscall
+   118                                  
+   119                                  maxrand:
+   120                                  	;parameters: int seed, int max
+   121                                  	; is random_seed recursive?????? ask
+   122                                  	
+   123                                  	
+   124                                  	;mov	random_seed, 0
+   125                                  	;mov	rdi	;rdi = user int input-> due to equation, will be acting as random_seed
+   126                                  		
+   127 000000E2 4889F8                  	mov	rax, rdi
+   128 000000E5 B96D4EC641              	mov	rcx, 1103515245
+   129 000000EA 48F7E1                  	mul	rcx
+   130                                  	
+   131 000000ED 480539300000            	add	rax, 12345
+   132 000000F3 48030425[2C000000]      	add	rax, [rand_seed]	;future proofing?
+   133                                  	
+   134                                  	;xor	rdx, rdx
+   135                                  	
+   136 000000FB 4831FF                  	xor	rdi, rdi
+   137 000000FE BF00000100              	mov	rdi, 65536
+   138 00000103 48F7F7                  	div	rdi 			;rax dividend and quotient, rdx remainder
+   139                                  	
+   140 00000106 50                      	push	rax		
+   141                                  	
+   142 00000107 4883C601                	add	rsi, 1	;rsi = max number + 1
+   143 0000010B 4831D2                  	xor	rdx, rdx
+   144                                  
+   145                                  	;mov	rdx, rax	
+   146                                  	;mov	rdi, rsi	;divide by max+1
+   147                                  	;div	rdx
+   148 0000010E 48F7F6                  	div	rsi	
+   149 00000111 48F7E6                  	mul	rsi
+   150                                  	
+   151 00000114 4889C7                  	mov	rdi, rax
+   152 00000117 58                      	pop	rax
+   153 00000118 4829F8                  	sub	rax, rdi
+   154                                   
+   155                                  	;mov	rdi, rsi
+   156                                  	;mul	rax
+   157                                  
+   158                                  			
+   159 0000011B C3                      	ret	
+   160                                  
+   161                                  	
+   162                                  	
+   163                                  
+   164                                  exit:
+   165 0000011C B83C000000                      mov     rax, 60
+   166 00000121 4831FF                          xor     rdi, rdi
+   167 00000124 0F05                            syscall
+   168                                  
+   169                                  
